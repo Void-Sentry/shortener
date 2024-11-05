@@ -17,13 +17,20 @@ export class ShortController {
 
     @Patch()
     edit() {
-        return this.shortService.urlRepository.save({ originalUrl: '' });
+        return this.shortService.urlRepository.update({
+            data: { originalUrl: '' },
+            compositeId: {
+                id: '',
+            },
+        });
     }
 
     @Delete()
     async destroy() {
-        const url = await this.shortService.urlRepository.findOneBy({ id: 1 });
-        const deleted = await this.shortService.urlRepository.softDelete(url);
+        const deleted = await this.shortService.urlRepository.update({
+            data: { deletedAt: new Date() },
+            compositeId: { id: '' },
+        });
         return deleted;
     }
 }

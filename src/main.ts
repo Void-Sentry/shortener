@@ -1,5 +1,6 @@
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { init } from './infrastructure/database/migrations';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -27,7 +28,14 @@ async function bootstrap() {
       prefetchCount: 1,
     },
   });
+
+  // validate DB
+  await init();
+
+  // load DB pool
+  await import('./infrastructure/database');
+
   app.startAllMicroservices();
-  await app.listen({ host: '0.0.0.0', port: +process.env.PORT });
+  await app.listen({ host: process.env.HOST, port: +process.env.PORT });
 }
 bootstrap();

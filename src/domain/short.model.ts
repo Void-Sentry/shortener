@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { UrlEntity } from "src/infrastructure/database/entities";
 
 @Injectable()
 export class ShortModel {
@@ -19,6 +20,10 @@ export class ShortModel {
         }
 
         return encoded;
+    };
+
+    readonly generateShortUrl = (url: UrlEntity): string => {
+        return `${process.env.EXTERNAL_HOST}/${url.shortCode}`;
     };
 
     readonly generateShortCode = async (urlCount: number): Promise<string> => {

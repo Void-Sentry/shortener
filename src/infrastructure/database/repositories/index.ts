@@ -1,7 +1,10 @@
-import { clickRepository } from "./click.repository";
-import { urlRepository } from "./url.repository";
+import { ClickRepository } from "./click.repository";
+import { UrlRepository } from "./url.repository";
+
+export * from './click.repository';
+export * from './url.repository';
 
 export const repositories = [
-    ...clickRepository,
-    ...urlRepository,
+    ClickRepository,
+    UrlRepository,
 ];

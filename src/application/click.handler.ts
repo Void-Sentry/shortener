@@ -1,23 +1,21 @@
-import { ClickEntity } from "src/infrastructure/database/entities";
+import { ClickRepository } from "src/infrastructure/database/repositories";
 import { MessagePattern, Payload } from "@nestjs/microservices";
-import { Controller, Inject } from "@nestjs/common";
-import { Repository } from "typeorm";
+import { Controller } from "@nestjs/common";
 
 @Controller()
 export class ClickHandler {
-    constructor(
-        @Inject('CLICK_REPOSITORY')
-        private readonly clickRepository: Repository<ClickEntity>,
-    ) {}
+    constructor(private readonly clickRepository: ClickRepository) {}
 
     @MessagePattern('URL_CLICKED')
     urlClickedHandler(@Payload() data: any) {
-        this.clickRepository.save({
-            url: data.url,
-            userAgent: data.agent,
-            referrer: data.referrer,
-            country: data.country,
-            ipAddress: data.ip,
+        this.clickRepository.insert({
+            data: {
+                url: data.url,
+                userAgent: data.agent,
+                referrer: data.referrer,
+                country: data.country,
+                ipAddress: data.ip,
+            },
         });
     }
 }

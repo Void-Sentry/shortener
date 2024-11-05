@@ -1,4 +1,3 @@
-import { DatabaseModule } from './infrastructure/database/database.module';
 import { repositories } from './infrastructure/database/repositories';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ShortController } from './application/short.controller';
@@ -27,7 +26,6 @@ import { models } from './domain';
         },
       }
     ]),
-    DatabaseModule,
   ],
   controllers: [ShortController],
   providers: [
