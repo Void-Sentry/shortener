@@ -1,26 +1,27 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { UrlEntity } from "./url.entity";
+import { GenericEntity, IGenericEntity } from './generic.entity';
 
-@Entity('clicks')
-export class ClickEntity {
-    @PrimaryGeneratedColumn()
+export interface IClick extends IGenericEntity {
     id: number;
-
-    @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_TIMESTAMP' })
-    clickedAt: Date;
-
-    @Column({ type: 'varchar', length: 255, nullable: false })
     userAgent: string;
-
-    @Column({ type: 'varchar', length: 45, nullable: false })
     ipAddress: string;
-
-    @Column({ type: 'varchar', length: 255, nullable: false })
     referrer: string;
-
-    @Column({ type: 'varchar', length: 100, nullable: false })
     country: string;
+    url: string;
+}
 
-    @ManyToOne(() => UrlEntity, (url) => url.id, { onDelete: 'CASCADE' })
-    url: UrlEntity;
+export class ClickEntity
+    extends GenericEntity
+    implements IClick {
+
+    id: number;
+    userAgent: string;
+    ipAddress: string;
+    referrer: string;
+    country: string;
+    url: string;
+
+    constructor(data?: Partial<IClick>) {
+        super('clicks');
+        Object.assign(this, data);
+    }
 }

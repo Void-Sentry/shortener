@@ -1,10 +1,16 @@
-import { UrlEntity } from "../entities";
-import { DataSource } from "typeorm";
+import { GenericRepository, IGenericRepository } from './generic.repository';
+import { Injectable } from '@nestjs/common';
+import { UrlEntity } from '../entities';
 
-export const urlRepository = [
-    {
-        provide: 'URL_REPOSITORY',
-        useFactory: (dataSource: DataSource) => dataSource.getRepository(UrlEntity),
-        inject: ['DATA_SOURCE'],
-    }
-];
+export interface IUrlRepository extends IGenericRepository<UrlEntity> {}
+
+@Injectable()
+export class UrlRepository
+  extends GenericRepository<UrlEntity>
+  implements IUrlRepository
+{
+  constructor() {
+    const entity = new UrlEntity();
+    super(entity);
+  }
+}

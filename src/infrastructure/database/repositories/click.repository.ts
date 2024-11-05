@@ -1,10 +1,16 @@
-import { ClickEntity } from "../entities";
-import { DataSource } from "typeorm";
+import { GenericRepository, IGenericRepository } from './generic.repository';
+import { Injectable } from '@nestjs/common';
+import { ClickEntity } from '../entities';
 
-export const clickRepository = [
-    {
-        provide: 'CLICK_REPOSITORY',
-        useFactory: (dataSource: DataSource) => dataSource.getRepository(ClickEntity),
-        inject: ['DATA_SOURCE'],
-    }
-];
+export interface IClickRepository extends IGenericRepository<ClickEntity> {}
+
+@Injectable()
+export class ClickRepository
+  extends GenericRepository<ClickEntity>
+  implements IClickRepository
+{
+  constructor() {
+    const entity = new ClickEntity();
+    super(entity);
+  }
+}

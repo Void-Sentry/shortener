@@ -1,23 +1,23 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
+import { GenericEntity, IGenericEntity } from './generic.entity';
 
-@Entity('urls')
-export class UrlEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
-
-    @Index({ unique: true })
-    @Column({ type: 'varchar', length: 255, nullable: false })
+export interface IUrl extends IGenericEntity {
+    id: string;
     shortCode: string;
-
-    @Column({ type: 'text', nullable: false })
     originalUrl: string;
+    userId: number;
+}
 
-    @Column({ type: 'bigint', nullable: true })
-    userId?: number;
+export class UrlEntity
+  extends GenericEntity
+  implements IUrl
+{
+  id: string;
+  shortCode: string;
+  originalUrl: string;
+  userId: number;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @DeleteDateColumn()
-    expiredAt: Date;
+  constructor(data?: Partial<IUrl>) {
+    super('urls');
+    Object.assign(this, data);
+  }
 }

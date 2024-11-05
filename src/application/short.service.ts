@@ -2,12 +2,12 @@ import { UrlEntity } from "src/infrastructure/database/entities";
 import { Inject, Injectable } from "@nestjs/common";
 import { ShortModel } from "src/domain";
 import { Repository } from "typeorm";
+import { UrlRepository } from "src/infrastructure/database/repositories";
 
 @Injectable()
 export class ShortService {
     constructor(
-        @Inject('URL_REPOSITORY')
-        readonly urlRepository: Repository<UrlEntity>,
+        readonly urlRepository: UrlRepository,
         private readonly shortModel: ShortModel,
     ) {}
 
@@ -15,9 +15,9 @@ export class ShortService {
         const urlCount = await this.urlRepository.count();
         const shortCode = await this.shortModel.generateShortCode(urlCount);
 
-        const url = this.urlRepository.create({ originalUrl, shortCode, userId });
-        await this.urlRepository.save(url);
+        const urlEntity = await this.urlRepository.insert({ data: { originalUrl, shortCode, userId } });
+        const url = this.shortModel.generateShortUrl(urlEntity);
 
-        return shortCode;
+        return url;
     };
 }

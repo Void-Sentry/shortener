@@ -1,8 +1,6 @@
 services:
-  redirector:
-    image: node:lts-alpine
-    working_dir: /app
-    entrypoint: npm run start:dev
+  shortener:
+    image: shortener:latest
     depends_on:
       - cache
       - roach1
@@ -11,12 +9,28 @@ services:
       - rabbitmq1
       - rabbitmq2
       - rabbitmq3
-    env_file:
-      - .env
+    secrets:
+      - source: db_ca_crt
+        target: ca.crt
+      - source: db_client_root_key
+        target: client.root.key
+        mode: 0600
+      - source: db_client_root_crt
+        target: client.root.crt
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - DB_NAME=shortener
+      - DB_PORT=26257
+      - DB_USER=root
+      - DB_HOST=roach-lb
+      - BUS_HOST=rabbit-lb
+      - BUS_PORT=5672
+      - BUS_USER=admin
+      - BUS_PASS=admin
+      - BUS_QUEUE=shortener_queue
     networks:
       - usnet
       - busnet
-      - dbnet1
+      - dbnet
       - cachenet
-    volumes:
-      - ./:/app
