@@ -2,7 +2,15 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
+  readonly listAll = (): string => {
     return 'Hello World!';
-  }
+  };
+
+  readonly edit = () => {
+
+  };
+
+  readonly softDelete = () => {
+
+  };
 }
