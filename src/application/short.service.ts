@@ -1,6 +1,6 @@
+import { UrlEntity } from "src/infrastructure/database/entities";
 import { Inject, Injectable } from "@nestjs/common";
 import { ShortModel } from "src/domain";
-import { UrlEntity } from "src/infrastructure/database/entities";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -12,7 +12,7 @@ export class ShortService {
     ) {}
 
     readonly shortenUrl = async (originalUrl: string, userId?: number): Promise<string> => {
-        const urlCount = 100;
+        const urlCount = await this.urlRepository.count();
         const shortCode = await this.shortModel.generateShortCode(urlCount);
 
         const url = this.urlRepository.create({ originalUrl, shortCode, userId });
