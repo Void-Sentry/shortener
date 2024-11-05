@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "src/presentation/auth.guard";
 import { ShortService } from "./short.service";
 
 @Controller()
 export class ShortController {
     constructor(private readonly shortService: ShortService) {}
 
+    @UseGuards(AuthGuard)
     @Get()
     list() {
         return this.shortService.urlRepository.findBy({ userId: 1 });
@@ -15,6 +17,7 @@ export class ShortController {
         return this.shortService.shortenUrl(originalUrl, 1);
     }
 
+    @UseGuards(AuthGuard)
     @Patch()
     edit() {
         return this.shortService.urlRepository.update({
@@ -25,6 +28,7 @@ export class ShortController {
         });
     }
 
+    @UseGuards(AuthGuard)
     @Delete()
     async destroy() {
         const deleted = await this.shortService.urlRepository.update({

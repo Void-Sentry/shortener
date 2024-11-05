@@ -1,8 +1,6 @@
-import { UrlEntity } from "src/infrastructure/database/entities";
-import { Inject, Injectable } from "@nestjs/common";
-import { ShortModel } from "src/domain";
-import { Repository } from "typeorm";
 import { UrlRepository } from "src/infrastructure/database/repositories";
+import { Injectable } from "@nestjs/common";
+import { ShortModel } from "src/domain";
 
 @Injectable()
 export class ShortService {
