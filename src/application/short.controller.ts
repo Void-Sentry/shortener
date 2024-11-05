@@ -1,39 +1,43 @@
-import { Body, Controller, Delete, Get, Patch, Post, UseGuards } from "@nestjs/common";
-import { AuthGuard } from "src/presentation/auth.guard";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { AuthGuard, RequestWithUser } from "src/presentation/guards/auth.guard";
+import { OptionalAuthGuard } from "src/presentation/guards/optional-auth.guard";
+import { EditOriginalUrlDto, UrlIdDto } from "src/presentation/dtos";
 import { ShortService } from "./short.service";
 
 @Controller()
 export class ShortController {
     constructor(private readonly shortService: ShortService) {}
 
-    @UseGuards(AuthGuard)
+    @UseGuards(OptionalAuthGuard)
     @Get()
-    list() {
-        return this.shortService.urlRepository.findBy({ userId: 1 });
+    list(@Req() req: RequestWithUser) {
+        return this.shortService.urlRepository.findBy({ userId: req.user.sub });
     }
 
+    @UseGuards(OptionalAuthGuard)
     @Post()
-    create(@Body() { originalUrl }: any) {
-        return this.shortService.shortenUrl(originalUrl, 1);
+    create(@Req() req: RequestWithUser, @Body() { originalUrl }: EditOriginalUrlDto) {
+        return this.shortService.shortenUrl(originalUrl, req?.user.sub);
     }
 
     @UseGuards(AuthGuard)
     @Patch()
-    edit() {
+    edit(@Req() req: RequestWithUser, @Param() { id }: UrlIdDto, @Body() { originalUrl }: EditOriginalUrlDto) {
         return this.shortService.urlRepository.update({
-            data: { originalUrl: '' },
+            data: { originalUrl },
             compositeId: {
-                id: '',
+                id,
+                userId: req.user.sub,
             },
         });
     }
 
     @UseGuards(AuthGuard)
-    @Delete()
-    async destroy() {
+    @Delete('/:id')
+    async destroy(@Req() req: RequestWithUser, @Param() { id }: UrlIdDto) {
         const deleted = await this.shortService.urlRepository.update({
             data: { deletedAt: new Date() },
-            compositeId: { id: '' },
+            compositeId: { id, userId: req.user.sub },
         });
         return deleted;
     }
