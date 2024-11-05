@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { UrlEntity } from "src/infrastructure/database/entities";
+import { UrlEntity } from "../infrastructure/database/entities";
 
 @Injectable()
 export class ShortModel {
