@@ -2,8 +2,10 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from
 import { verify } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 
+export type RequestWithUser = Request & { user: any };
+
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class OptionalAuthGuard implements CanActivate {
     private client = jwksClient({
         jwksUri: process.env.JWKS_URI,
     });
@@ -32,12 +34,12 @@ export class AuthGuard implements CanActivate {
         const authHeader = request.headers['authorization'];
 
         if (!authHeader)
-            throw new UnauthorizedException("Authorization header is missing.");
+            return true;
 
         const token = authHeader.split(' ')[1];
 
         if (!token)
-            throw new UnauthorizedException("Token not found in Authorization header.");
+            return true;
 
         try {
             const decoded = await this.#validateToken(token);
