@@ -1,16 +1,34 @@
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { init } from './infrastructure/database/migrations';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import { createLogger, format, Logger } from 'winston';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+const logger: Logger = createLogger({
+  level: 'info',
+  format: format.json(),
+  transports: [
+    new DailyRotateFile({
+      filename: '/logs/shortener-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d'
+    })
+  ]
+});
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter()
   );
+  app.useLogger(logger);
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
   app.connectMicroservice<MicroserviceOptions>({
