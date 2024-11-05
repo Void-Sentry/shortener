@@ -4,6 +4,7 @@ import { init } from './infrastructure/database/migrations';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -34,6 +35,15 @@ async function bootstrap() {
 
   // load DB pool
   await import('./infrastructure/database');
+
+  // swagger
+  const options = new DocumentBuilder()
+    .setTitle('Url shortener')
+    .setDescription('Url shortener')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('api', app, document);
 
   app.startAllMicroservices();
   await app.listen({ host: process.env.HOST, port: +process.env.PORT });
