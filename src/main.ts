@@ -7,6 +7,6 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter()
   );
-  await app.listen({ host: '0.0.0.0', port: 3000 });
+  await app.listen({ host: '0.0.0.0', port: +process.env.PORT });
 }
 bootstrap();
