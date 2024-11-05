@@ -34,3 +34,5 @@ services:
       - busnet
       - dbnet
       - cachenet
+    volumes:
+      - shortenerLogging:/shortener/logs
