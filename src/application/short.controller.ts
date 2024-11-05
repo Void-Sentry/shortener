@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { AuthGuard, RequestWithUser } from "src/presentation/guards/auth.guard";
-import { OptionalAuthGuard } from "src/presentation/guards/optional-auth.guard";
-import { EditOriginalUrlDto, UrlIdDto } from "src/presentation/dtos";
-import { UrlEntity } from "src/infrastructure/database/entities";
+import { AuthGuard, RequestWithUser } from "../presentation/guards/auth.guard";
+import { OptionalAuthGuard } from "../presentation/guards/optional-auth.guard";
+import { EditOriginalUrlDto, UrlIdDto } from "../presentation/dtos";
+import { UrlEntity } from "../infrastructure/database/entities";
 import { ShortService } from "./short.service";
 
 @ApiTags('URL Shortener')

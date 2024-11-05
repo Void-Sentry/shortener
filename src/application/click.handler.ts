@@ -1,4 +1,4 @@
-import { ClickRepository } from "src/infrastructure/database/repositories";
+import { ClickRepository } from "../infrastructure/database/repositories";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 import { Controller } from "@nestjs/common";
 

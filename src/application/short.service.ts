@@ -1,6 +1,6 @@
-import { UrlRepository } from "src/infrastructure/database/repositories";
+import { UrlRepository } from "../infrastructure/database/repositories";
 import { Injectable } from "@nestjs/common";
-import { ShortModel } from "src/domain";
+import { ShortModel } from "../domain";
 
 @Injectable()
 export class ShortService {
