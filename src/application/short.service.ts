@@ -12,11 +12,18 @@ export class ShortService {
         readonly urlRepository: UrlRepository,
     ) {}
 
-    readonly shortenUrl = async (originalUrl: string, userId?: number): Promise<string> => {
+    readonly shortenUrl = async (originalUrl: string, user?: { sub: string; client_id: string; }): Promise<string> => {
         const urlCount = await this.urlRepository.count();
         const shortCode = await this.shortModel.generateShortCode(urlCount);
 
-        const urlEntity = await this.urlRepository.insert({ data: { originalUrl, shortCode, userId } });
+        const urlEntity = await this.urlRepository.insert({
+            data: {
+                originalUrl,
+                shortCode,
+                userId: user.sub,
+                clientId: user.client_id,
+            },
+        });
         const url = this.shortModel.generateShortUrl(urlEntity);
 
         this.redirectorClient.emit('URL_GENERATED', { originalUrl, code: shortCode });

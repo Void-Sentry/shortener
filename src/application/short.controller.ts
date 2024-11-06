@@ -20,7 +20,10 @@ export class ShortController {
     @UseGuards(OptionalAuthGuard)
     @Get()
     list(@Req() req: RequestWithUser) {
-        return this.shortService.urlRepository.findBy({ userId: req.user.sub });
+        return this.shortService.urlRepository.findBy({
+            userId: req?.user?.sub,
+            clientId: req?.user?.client_id,
+        });
     }
 
     @ApiOperation({ summary: 'Create a shortened URL' })
@@ -36,7 +39,7 @@ export class ShortController {
     @UseGuards(OptionalAuthGuard)
     @Post()
     create(@Req() req: RequestWithUser, @Body() { originalUrl }: EditOriginalUrlDto) {
-        return this.shortService.shortenUrl(originalUrl, req?.user?.sub);
+        return this.shortService.shortenUrl(originalUrl, req?.user);
     }
 
     @ApiBearerAuth()
@@ -62,6 +65,7 @@ export class ShortController {
             compositeId: {
                 id,
                 userId: req.user.sub,
+                clientId: req.user.client_id,
             },
         });
     }
@@ -86,7 +90,11 @@ export class ShortController {
     async destroy(@Req() req: RequestWithUser, @Param() { id }: UrlIdDto) {
         const deleted = await this.shortService.urlRepository.update({
             data: { deletedAt: new Date() },
-            compositeId: { id, userId: req.user.sub },
+            compositeId: {
+                id,
+                userId: req.user.sub,
+                clientId: req.user.client_id,
+            },
         });
         return deleted;
     }

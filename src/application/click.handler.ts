@@ -11,6 +11,7 @@ export class ClickHandler {
         originalUrl: string;
         code: string;
         userAgent: string;
+        country: string;
         ip: string;
     }) {
         this.clickRepository.insert({
