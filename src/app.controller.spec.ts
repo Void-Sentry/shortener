@@ -38,7 +38,7 @@ describe('ShortController', () => {
 
   describe('list', () => {
     it('should return a list of user URLs', async () => {
-      const mockUrls: Partial<UrlEntity>[] = [{ id: '1', originalUrl: 'http://example.com', userId: 1, createdAt: new Date() }];
+      const mockUrls: Partial<UrlEntity>[] = [{ id: '1', originalUrl: 'http://example.com', userId: '', createdAt: new Date() }];
       jest.spyOn(shortService.urlRepository, 'findBy').mockResolvedValue(mockUrls as any);
 
       const req = { user: { sub: 'user1' } };

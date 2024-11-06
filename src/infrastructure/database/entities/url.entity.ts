@@ -1,10 +1,11 @@
 import { GenericEntity, IGenericEntity } from './generic.entity';
 
 export interface IUrl extends IGenericEntity {
-    id: string;
-    shortCode: string;
-    originalUrl: string;
-    userId: number;
+  id: string;
+  shortCode: string;
+  originalUrl: string;
+  userId?: string;
+  clientId?: string;
 }
 
 export class UrlEntity
@@ -14,7 +15,8 @@ export class UrlEntity
   id: string;
   shortCode: string;
   originalUrl: string;
-  userId: number;
+  userId?: string;
+  clientId?: string;
 
   constructor(data?: Partial<IUrl>) {
     super('urls');
