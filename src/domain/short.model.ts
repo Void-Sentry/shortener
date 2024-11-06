@@ -22,19 +22,30 @@ export class ShortModel {
         return encoded;
     };
 
+    readonly #generateRandomString = (length: number): string => {
+        let randomStr = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * this.#BASE62_ALPHABET.length);
+            randomStr += this.#BASE62_ALPHABET[randomIndex];
+        }
+        return randomStr;
+    };
+
     readonly generateShortUrl = (url: UrlEntity): string => {
         return `${process.env.EXTERNAL_HOST}/${url.shortCode}`;
     };
 
     readonly generateShortCode = async (urlCount: number): Promise<string> => {
         let digits = 6;
+
         while (urlCount >= this.#EXPANSION_THRESHOLD * this.#getMaxCodesForDigits(digits)) {
             digits++;
         }
 
         const id = urlCount + 1;
         const shortCode = this.#base62Encode(id);
+        const randomPrefix = this.#generateRandomString(digits - shortCode.length);
 
-        return shortCode.padStart(digits, '0');
+        return `${randomPrefix}${shortCode}`;
     }
 }

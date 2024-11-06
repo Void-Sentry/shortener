@@ -29,8 +29,12 @@ services:
       - BUS_USER=admin
       - BUS_PASS=admin
       - BUS_QUEUE=shortener_queue
+      - EXTERNAL_HOST=http://localhost:80
+      - EXTERNAL_DOMAIN=localhost
+      - JWKS_URI=http://zitadel:8080/oauth/v2/keys
     networks:
       - usnet
+      - authnet
       - busnet
       - dbnet
       - cachenet

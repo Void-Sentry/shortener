@@ -75,7 +75,7 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
   readonly count = async (): Promise<number> => {
     const queryString = `SELECT COUNT(*) AS total FROM ${this.entity.__table_name}`;
     const res = await DbConn.query(queryString);
-    return res.rows['total'];
+    return res.rows[0]['total'];
   };
 
   readonly insert = async ({

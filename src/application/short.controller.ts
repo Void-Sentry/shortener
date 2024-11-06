@@ -36,7 +36,7 @@ export class ShortController {
     @UseGuards(OptionalAuthGuard)
     @Post()
     create(@Req() req: RequestWithUser, @Body() { originalUrl }: EditOriginalUrlDto) {
-        return this.shortService.shortenUrl(originalUrl, req?.user.sub);
+        return this.shortService.shortenUrl(originalUrl, req?.user?.sub);
     }
 
     @ApiBearerAuth()
