@@ -1,12 +1,15 @@
 import { UrlRepository } from "../infrastructure/database/repositories";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
+import { ClientRMQ } from "@nestjs/microservices";
 import { ShortModel } from "../domain";
 
 @Injectable()
 export class ShortService {
     constructor(
-        readonly urlRepository: UrlRepository,
+        @Inject('REDIRECTOR_CLIENT')
+        private readonly redirectorClient: ClientRMQ,
         private readonly shortModel: ShortModel,
+        readonly urlRepository: UrlRepository,
     ) {}
 
     readonly shortenUrl = async (originalUrl: string, userId?: number): Promise<string> => {
@@ -15,6 +18,8 @@ export class ShortService {
 
         const urlEntity = await this.urlRepository.insert({ data: { originalUrl, shortCode, userId } });
         const url = this.shortModel.generateShortUrl(urlEntity);
+
+        this.redirectorClient.emit('URL_GENERATED', { originalUrl, url });
 
         return url;
     };

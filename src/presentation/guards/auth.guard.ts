@@ -8,6 +8,9 @@ export type RequestWithUser = Request & { user: any };
 export class AuthGuard implements CanActivate {
     private client = jwksClient({
         jwksUri: process.env.JWKS_URI,
+        requestHeaders: {
+            "Host": process.env.EXTERNAL_DOMAIN
+        }
     });
 
     readonly #getKey = (header: any, callback: (err: any, key: any) => void) =>

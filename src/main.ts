@@ -5,6 +5,7 @@ import { init } from './infrastructure/database/migrations';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { createLogger, format, Logger } from 'winston';
 import { ValidationPipe } from '@nestjs/common';
+import { WinstonModule } from 'nest-winston';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
@@ -13,7 +14,7 @@ const logger: Logger = createLogger({
   format: format.json(),
   transports: [
     new DailyRotateFile({
-      filename: '/logs/shortener-%DATE%.log',
+      filename: '/shortener/logs/shortener-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
       maxSize: '20m',
@@ -25,9 +26,9 @@ const logger: Logger = createLogger({
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter()
+    new FastifyAdapter(),
   );
-  app.useLogger(logger);
+  app.useLogger(WinstonModule.createLogger({ instance: logger }));
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
@@ -61,7 +62,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('short/api', app, document);
 
   app.startAllMicroservices();
   await app.listen({ host: process.env.HOST, port: +process.env.PORT });
