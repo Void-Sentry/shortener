@@ -30,6 +30,7 @@ services:
       - BUS_PASS=admin
       - BUS_QUEUE=shortener_queue
       - EXTERNAL_HOST=http://localhost:80
+      - HMAC_SEED=o4ye93kpdeazj0jad5sg4dghon4v73s1
       - EXTERNAL_DOMAIN=localhost
       - JWKS_URI=http://zitadel:8080/oauth/v2/keys
     networks:

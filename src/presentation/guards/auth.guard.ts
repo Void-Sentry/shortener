@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { verify } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
+import { Request } from 'express';
 
 export type RequestWithUser = Request & { user: any };
 
@@ -37,7 +38,7 @@ export class AuthGuard implements CanActivate {
         const authHeader = request.headers['authorization'];
 
         if (!authHeader)
-            throw new UnauthorizedException("Authorization header is missing.");
+            return true;
 
         const token = authHeader.split(' ')[1];
 

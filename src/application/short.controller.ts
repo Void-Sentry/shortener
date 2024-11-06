@@ -1,63 +1,93 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthGuard, RequestWithUser } from "../presentation/guards/auth.guard";
-import { OptionalAuthGuard } from "../presentation/guards/optional-auth.guard";
+import { TokenGuard } from "src/presentation/guards/token-required.guard";
 import { EditOriginalUrlDto, UrlIdDto } from "../presentation/dtos";
 import { UrlEntity } from "../infrastructure/database/entities";
 import { ShortService } from "./short.service";
+import { createHmac } from "crypto";
+import { Response } from "express";
 
 @ApiTags('URL Shortener')
+@UseGuards(AuthGuard)
 @Controller('short')
 export class ShortController {
     constructor(private readonly shortService: ShortService) {}
 
     @ApiOperation({ summary: 'List user shortened URLs' })
     @ApiResponse({
-        status: 200,
+        status: HttpStatus.OK,
         type: [UrlEntity],
         description: 'Returns an array of shortened URLs associated with the authenticated user',
     })
-    @UseGuards(OptionalAuthGuard)
     @Get()
     list(@Req() req: RequestWithUser) {
+        const sub = req.cookies['sessionId'] || req?.user?.sub;
+
+        if (!sub) return [];
+
         return this.shortService.urlRepository.findBy({
-            userId: req?.user?.sub,
+            userId: sub,
             clientId: req?.user?.client_id,
         });
     }
 
     @ApiOperation({ summary: 'Create a shortened URL' })
     @ApiResponse({
-        status: 201,
+        status: HttpStatus.CREATED,
         type: 'string',
         description: 'Creates a shortened URL and returns the URL entity',
     })
     @ApiResponse({
-        status: 400,
+        status: HttpStatus.BAD_REQUEST,
         description: 'Invalid URL format or missing required fields',
     })
-    @UseGuards(OptionalAuthGuard)
     @Post()
-    create(@Req() req: RequestWithUser, @Body() { originalUrl }: EditOriginalUrlDto) {
-        return this.shortService.shortenUrl(originalUrl, req?.user);
+    async create(@Req() req: RequestWithUser, @Res() res: Response, @Body() { originalUrl }: EditOriginalUrlDto) {
+        if (!req?.user?.sub) {
+            const info = {
+                agent: req.headers['user-agent'],
+                ip: (process.env.FAKE_IP || req.headers['X-Forwarded-For']) as string,
+            };
+            const serializedInfo = JSON.stringify(info);
+            req.user.sub = createHmac('sha256', process.env.HMAC_SEED)
+                .update(serializedInfo)
+                .digest('hex');
+    
+            res.cookie('sessionId', req.user.sub, {
+                httpOnly: true,
+                secure: false,
+                maxAge: 24 * 60 * 60 * 1000, // one day in ms
+                sameSite: 'strict',
+            });
+        }
+
+        const url = await this.shortService.shortenUrl(
+            originalUrl,
+            {
+                sub: req?.user?.sub,
+                client_id: req?.user?.client_id,
+            });
+
+        return res.status(HttpStatus.CREATED).json(url);
     }
 
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Edit an existing shortened URL' })
     @ApiResponse({
-        status: 200,
+        status: HttpStatus.OK,
         type: UrlEntity,
         description: 'Updates the original URL for the specified shortened URL ID',
     })
     @ApiResponse({
-        status: 404,
+        status: HttpStatus.NOT_FOUND,
         description: 'URL not found or does not belong to the authenticated user',
     })
     @ApiResponse({
-        status: 403,
+        status: HttpStatus.FORBIDDEN,
         description: 'Unauthorized to edit this URL',
     })
-    @UseGuards(AuthGuard)
+    @UseGuards(TokenGuard)
     @Patch('/:id')
     edit(@Req() req: RequestWithUser, @Param() { id }: UrlIdDto, @Body() { originalUrl }: EditOriginalUrlDto) {
         return this.shortService.urlRepository.update({
@@ -73,19 +103,19 @@ export class ShortController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a shortened URL' })
     @ApiResponse({
-        status: 200,
+        status: HttpStatus.OK,
         type: UrlEntity,
         description: 'Marks the specified shortened URL as deleted',
     })
     @ApiResponse({
-        status: 404,
+        status: HttpStatus.NOT_FOUND,
         description: 'URL not found or does not belong to the authenticated user',
     })
     @ApiResponse({
-        status: 403,
+        status: HttpStatus.FORBIDDEN,
         description: 'Unauthorized to delete this URL',
     })
-    @UseGuards(AuthGuard)
+    @UseGuards(TokenGuard)
     @Delete('/:id')
     async destroy(@Req() req: RequestWithUser, @Param() { id }: UrlIdDto) {
         const deleted = await this.shortService.urlRepository.update({
