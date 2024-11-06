@@ -28,10 +28,9 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+
   app.useLogger(WinstonModule.createLogger({ instance: logger }));
-
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
@@ -64,7 +63,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('short/api', app, document);
 
-  app.startAllMicroservices();
+  await app.startAllMicroservices();
   await app.listen({ host: process.env.HOST, port: +process.env.PORT });
 }
 bootstrap();
