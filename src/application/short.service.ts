@@ -19,7 +19,7 @@ export class ShortService {
         const urlEntity = await this.urlRepository.insert({ data: { originalUrl, shortCode, userId } });
         const url = this.shortModel.generateShortUrl(urlEntity);
 
-        this.redirectorClient.emit('URL_GENERATED', { originalUrl, url });
+        this.redirectorClient.emit('URL_GENERATED', { originalUrl, code: shortCode });
 
         return url;
     };

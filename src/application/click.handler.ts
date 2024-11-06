@@ -7,12 +7,17 @@ export class ClickHandler {
     constructor(private readonly clickRepository: ClickRepository) {}
 
     @MessagePattern('URL_CLICKED')
-    urlClickedHandler(@Payload() data: any) {
+    urlClickedHandler(@Payload() data: {
+        originalUrl: string;
+        code: string;
+        userAgent: string;
+        ip: string;
+    }) {
         this.clickRepository.insert({
             data: {
-                url: data.url,
-                userAgent: data.agent,
-                referrer: data.referrer,
+                url: data.code,
+                userAgent: data.userAgent,
+                referrer: data.originalUrl,
                 country: data.country,
                 ipAddress: data.ip,
             },
