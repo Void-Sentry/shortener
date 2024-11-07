@@ -29,6 +29,7 @@ services:
       - BUS_USER=admin
       - BUS_PASS=admin
       - BUS_QUEUE=shortener_queue
+      - CACHE_URL=redis://cache:6379
       - EXTERNAL_HOST=http://localhost:80
       - HMAC_SEED=o4ye93kpdeazj0jad5sg4dghon4v73s1
       - EXTERNAL_DOMAIN=localhost

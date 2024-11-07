@@ -26,7 +26,7 @@ export class ShortController {
 
         if (!sub) return res.status(HttpStatus.OK).send({ status: HttpStatus.OK, msg: [] });
 
-        const entity = await this.shortService.urlRepository.findBy({
+        const entity = await this.shortService.urlRepository.urlWithClicks({
             userId: sub,
             clientId: req?.user?.client_id,
         });
