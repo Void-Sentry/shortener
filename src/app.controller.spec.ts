@@ -1,7 +1,7 @@
-import { OptionalAuthGuard } from './presentation/guards/optional-auth.guard';
+import { TokenGuard } from './presentation/guards/token-required.guard';
 import { EditOriginalUrlDto, UrlIdDto } from './presentation/dtos';
-import { UrlEntity } from './infrastructure/database/entities';
 import { ShortController } from './application/short.controller';
+import { UrlEntity } from './infrastructure/database/entities';
 import { AuthGuard } from './presentation/guards/auth.guard';
 import { ShortService } from './application/short.service';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -28,7 +28,7 @@ describe('ShortController', () => {
     })
       .overrideGuard(AuthGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(OptionalAuthGuard)
+      .overrideGuard(TokenGuard)
       .useValue({ canActivate: () => true })
       .compile();
 
