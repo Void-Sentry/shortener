@@ -3,6 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ShortController } from './application/short.controller';
 import { ClickHandler } from './application/click.handler';
 import { ShortService } from './application/short.service';
+import { UrlHandler } from './application/url.handler';
 import { Module } from '@nestjs/common';
 import { models } from './domain';
 
@@ -28,7 +29,7 @@ import { models } from './domain';
       }
     ]),
   ],
-  controllers: [ShortController, ClickHandler],
+  controllers: [ShortController, ClickHandler, UrlHandler],
   providers: [
     ShortService,
     ...repositories,
