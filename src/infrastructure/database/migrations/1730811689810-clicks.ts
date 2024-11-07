@@ -5,7 +5,7 @@ export default {
     client.query(`
       CREATE TABLE clicks (
         id SERIAL PRIMARY KEY,
-        user_agent VARCHAR(100) NOT NULL,
+        user_agent TEXT NOT NULL,
         ip_address VARCHAR(46) NOT NULL,
         referrer TEXT NOT NULL,
         country VARCHAR(100),
