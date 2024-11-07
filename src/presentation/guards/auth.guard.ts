@@ -1,9 +1,9 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { FastifyRequest } from 'fastify';
 import { verify } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
-import { Request } from 'express';
 
-export type RequestWithUser = Request & { user: any };
+export type RequestWithUser = FastifyRequest & { user: any };
 
 @Injectable()
 export class AuthGuard implements CanActivate {

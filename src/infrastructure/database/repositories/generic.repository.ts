@@ -52,25 +52,27 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
     client?: TDbClient,
     lock?: 'SHARE' | 'UPDATE',
   ): Promise<E[] | E> => {
-    const keys = Object.keys(data);
-    const values = Object.values(data);
-
+    const filteredData = Object.entries(data).filter(([_, value]) => value !== undefined && value !== null);
+    const keys = filteredData.map(([key]) => key);
+    const values = filteredData.map(([_, value]) => value);
+  
     let queryStr = `SELECT * FROM ${this.entity.__table_name}`;
-
+  
     if (lock) queryStr += ` FOR ${lock}`;
-
+  
     if (keys.length > 0) {
       const snakeCaseKeys = keys.map(this.#camelToSnakeCase);
       const { clause } = this.buildWhereClause(snakeCaseKeys);
       queryStr += ` WHERE ${clause}`;
     }
-
+  
     const res = await (client ?? DbConn).query(queryStr, values);
-
+  
     const parsed = parse<E>(res);
-
+  
     return parsed.length === 1 ? parsed[0] : parsed;
   };
+  
 
   readonly count = async (): Promise<number> => {
     const queryString = `SELECT COUNT(*) AS total FROM ${this.entity.__table_name}`;
@@ -95,7 +97,6 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
     const placeholders = keys.map((_, index) => `$${index + 1}`).join(', ');
 
     const queryStr = `INSERT INTO ${this.entity.__table_name} (${columns}) VALUES (${placeholders}) RETURNING *`;
-
     const res = await (client ?? DbConn).query(queryStr, values);
 
     const parsed = parse<E>(res);

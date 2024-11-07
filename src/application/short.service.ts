@@ -21,7 +21,7 @@ export class ShortService {
                 originalUrl,
                 shortCode,
                 userId: user.sub,
-                clientId: user.client_id,
+                clientId: user?.client_id,
             },
         });
         const url = this.shortModel.generateShortUrl(urlEntity);

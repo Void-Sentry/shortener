@@ -6,8 +6,10 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import { createLogger, format, Logger } from 'winston';
 import { ValidationPipe } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
+import fastifyCookie from '@fastify/cookie';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import './infrastructure/polyfill';
 
 const logger: Logger = createLogger({
   level: 'info',
@@ -28,6 +30,9 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+  await app.register(fastifyCookie, {
+    secret: 'gcwk057mhjkivc8k20azd50j9eos2h16',
+  });
 
   app.useLogger(WinstonModule.createLogger({ instance: logger }));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));

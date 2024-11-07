@@ -5,8 +5,8 @@ import { TokenGuard } from "src/presentation/guards/token-required.guard";
 import { EditOriginalUrlDto, UrlIdDto } from "../presentation/dtos";
 import { UrlEntity } from "../infrastructure/database/entities";
 import { ShortService } from "./short.service";
+import { FastifyReply } from "fastify";
 import { createHmac } from "crypto";
-import { Response } from "express";
 
 @ApiTags('URL Shortener')
 @UseGuards(AuthGuard)
@@ -21,15 +21,17 @@ export class ShortController {
         description: 'Returns an array of shortened URLs associated with the authenticated user',
     })
     @Get()
-    list(@Req() req: RequestWithUser) {
+    async list(@Req() req: RequestWithUser, @Res() res: FastifyReply) {
         const sub = req.cookies['sessionId'] || req?.user?.sub;
 
-        if (!sub) return [];
+        if (!sub) return res.status(HttpStatus.OK).send({ status: HttpStatus.OK, msg: [] });
 
-        return this.shortService.urlRepository.findBy({
+        const entity = await this.shortService.urlRepository.findBy({
             userId: sub,
             clientId: req?.user?.client_id,
         });
+
+        return res.status(HttpStatus.OK).send({ status: HttpStatus.OK, msg: entity });
     }
 
     @ApiOperation({ summary: 'Create a shortened URL' })
@@ -43,22 +45,25 @@ export class ShortController {
         description: 'Invalid URL format or missing required fields',
     })
     @Post()
-    async create(@Req() req: RequestWithUser, @Res() res: Response, @Body() { originalUrl }: EditOriginalUrlDto) {
+    async create(@Req() req: RequestWithUser, @Res() res: FastifyReply, @Body() { originalUrl }: EditOriginalUrlDto) {
         if (!req?.user?.sub) {
             const info = {
                 agent: req.headers['user-agent'],
                 ip: (process.env.FAKE_IP || req.headers['X-Forwarded-For']) as string,
             };
             const serializedInfo = JSON.stringify(info);
-            req.user.sub = createHmac('sha256', process.env.HMAC_SEED)
-                .update(serializedInfo)
-                .digest('hex');
+            req.user = {
+                sub: createHmac('sha256', process.env.HMAC_SEED)
+                    .update(serializedInfo)
+                    .digest('hex'),
+            };
     
-            res.cookie('sessionId', req.user.sub, {
-                httpOnly: true,
-                secure: false,
+            res.setCookie('sessionId', req.user.sub, {
                 maxAge: 24 * 60 * 60 * 1000, // one day in ms
                 sameSite: 'strict',
+                httpOnly: true,
+                secure: false,
+                signed: false,
             });
         }
 
@@ -69,7 +74,7 @@ export class ShortController {
                 client_id: req?.user?.client_id,
             });
 
-        return res.status(HttpStatus.CREATED).json(url);
+        return res.status(HttpStatus.CREATED).send({ status: HttpStatus.CREATED, msg: url });
     }
 
     @ApiBearerAuth()
