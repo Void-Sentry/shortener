@@ -1,8 +1,6 @@
 services:
   shortener:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: shortener:latest
     depends_on:
       - cache
       - roach1
