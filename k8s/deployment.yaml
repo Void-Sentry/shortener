@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shortener
+  labels:
+    app: shortener
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shortener
+  template:
+    metadata:
+      labels:
+        app: shortener
+    spec:
+      containers:
+        - name: shortener
+          image: shortener:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3000"
+            - name: DB_NAME
+              value: "shortener"
+            - name: DB_PORT
+              value: "26257"
+            - name: DB_USER
+              value: "root"
+            - name: DB_HOST
+              value: "roach-lb"
+            - name: BUS_HOST
+              value: "rabbit-lb"
+            - name: BUS_PORT
+              value: "5672"
+            - name: BUS_USER
+              value: "admin"
+            - name: BUS_PASS
+              value: "admin"
+            - name: BUS_QUEUE
+              value: "shortener_queue"
+            - name: CACHE_URL
+              value: "redis://cache:6379"
+            - name: EXTERNAL_HOST
+              value: "http://localhost:80"
+            - name: HMAC_SEED
+              value: "o4ye93kpdeazj0jad5sg4dghon4v73s1"
+            - name: EXTERNAL_DOMAIN
+              value: "localhost"
+            - name: JWKS_URI
+              value: "http://zitadel:8080/oauth/v2/keys"
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
