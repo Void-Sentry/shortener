@@ -1,13 +1,14 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { RedisClientType, createClient } from 'redis';
+import { ConfigService } from '../config';
 
 @Injectable()
 export class CacheService implements OnModuleInit {
     readonly client: RedisClientType;
 
-    constructor() {
+    constructor(private readonly configService: ConfigService) {
         this.client = createClient({
-            url: process.env.CACHE_URL,
+            url: this.configService.get('CACHE_URL'),
         });
     }
 

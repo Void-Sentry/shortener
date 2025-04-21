@@ -1,28 +1,33 @@
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { initPool } from './utils/db-conn-standalone';
 import { PoolClient } from 'pg';
+import { ConfigService } from '../config';
 
 export type TDbClient = PoolClient;
 
-export class DbConn {
-  private static readonly pool = initPool();
+@Injectable()
+export class DbService {
+  private readonly pool = initPool(this.configService);
 
-  static async getClient(): Promise<TDbClient> {
-    return await DbConn.pool.connect();
+  constructor(private readonly configService: ConfigService) {}
+
+  async getClient(): Promise<TDbClient> {
+    return await this.pool.connect();
   }
 
-  static async beginTransaction(client: TDbClient): Promise<void> {
+  async beginTransaction(client: TDbClient): Promise<void> {
     await client.query('BEGIN');
   }
 
-  static async commitTransaction(client: TDbClient): Promise<void> {
+  async commitTransaction(client: TDbClient): Promise<void> {
     await client.query('COMMIT');
   }
 
-  static async rollbackTransaction(client: TDbClient): Promise<void> {
+  async rollbackTransaction(client: TDbClient): Promise<void> {
     await client.query('ROLLBACK');
   }
 
-  static async query(
+  async query(
     query: string,
     values?: any[],
     client?: TDbClient,

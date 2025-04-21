@@ -2,7 +2,7 @@ import { GenericRepository, IGenericRepository } from './generic.repository';
 import { parse } from '../utils/entity-parse';
 import { Injectable } from '@nestjs/common';
 import { UrlEntity } from '../entities';
-import { DbConn } from '..';
+import { DbService } from '../db.service';
 
 export interface IUrlRepository extends IGenericRepository<UrlEntity> {}
 
@@ -11,13 +11,13 @@ export class UrlRepository
   extends GenericRepository<UrlEntity>
   implements IUrlRepository
 {
-  constructor() {
+  constructor(dbService: DbService) {
     const entity = new UrlEntity();
-    super(entity);
+    super(entity, dbService);
   }
 
   readonly urlWithClicks = async (data: { userId: string; clientId?: string; }) => {
-    const client = await DbConn.getClient();
+    const client = await this.dbService.getClient();
 
     try {
       const clientId = data.clientId ?? null;

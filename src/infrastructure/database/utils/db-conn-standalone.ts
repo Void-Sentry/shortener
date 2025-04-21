@@ -1,16 +1,17 @@
+import { ConfigService } from 'src/infrastructure/config';
 import { readFileSync } from 'fs';
 import { Pool } from 'pg';
 
-export const initPool = (dbname = process.env.DB_NAME) => (
+export const initPool = (config: ConfigService) => (
     new Pool({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        port: +process.env.DB_PORT,
-        database: dbname,
+        host: config.get('DB_HOST'),
+        user: config.get('DB_USER'),
+        port: +config.get('DB_PORT'),
+        database: config.get('DB_NAME'),
         ssl: {
             rejectUnauthorized: true,
-            cert: readFileSync(`/run/secrets/client.${process.env.DB_USER}.crt`).toString(),
-            key: readFileSync(`/run/secrets/client.${process.env.DB_USER}.key`).toString(),
+            cert: readFileSync(`/run/secrets/client.${config.get('DB_USER')}.crt`).toString(),
+            key: readFileSync(`/run/secrets/client.${config.get('DB_USER')}.key`).toString(),
             ca: readFileSync('/run/secrets/ca.crt').toString(),
         },
     })

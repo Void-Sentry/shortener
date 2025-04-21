@@ -7,26 +7,35 @@ import { UrlHandler } from './application/url.handler';
 import { Module } from '@nestjs/common';
 import { models } from './domain';
 import { CacheService } from './infrastructure/cache/cache.service';
+import { ConfigModule, ConfigService } from './infrastructure/config';
+import { AuthGuard } from './presentation/guards/auth.guard';
+import { DbModule } from './infrastructure/database/db.module';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ConfigModule,
+    DbModule,
+    ClientsModule.registerAsync([
       {
         name: 'REDIRECTOR_CLIENT',
-        transport: Transport.RMQ,
-        options: {
-          urls: [{
-            hostname: process.env.BUS_HOST,
-            username: process.env.BUS_USER,
-            password: process.env.BUS_PASS,
-            port: +process.env.BUS_PORT,
-          }],
-          queue: 'redirector_queue',
-          queueOptions: {
-            durable: false
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [{
+              hostname: config.get('BUS_HOST'),
+              username: config.get('BUS_USER'),
+              password: config.get('BUS_PASS'),
+              port: +config.get('BUS_PORT'),
+            }],
+            queue: config.get('REDIRECTOR_QUEUE'),
+            queueOptions: {
+              durable: false
+            },
+            prefetchCount: 1,
           },
-          prefetchCount: 1,
-        },
+        }),
       }
     ]),
   ],
@@ -34,6 +43,7 @@ import { CacheService } from './infrastructure/cache/cache.service';
   providers: [
     ShortService,
     CacheService,
+    AuthGuard,
     ...repositories,
     ...models,
   ],

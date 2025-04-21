@@ -11,9 +11,19 @@ spec:
       app: shortener
   template:
     metadata:
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "shortener"
+        vault.hashicorp.com/agent-inject-secret-shortener-config: "secret/data/shortener/config"
+        # vault.hashicorp.com/agent-inject-template-shortener-config: |
+        #   {{- with secret "secret/data/shortener/config" -}}
+        #   export SHORTENER_CONFIG="{{ .Data.data.config }}"
+        #   {{- end -}}
+        vault.hashicorp.com/agent-inject-signal: "SIGHUP"
       labels:
         app: shortener
     spec:
+      serviceAccountName: shortener-sa
       containers:
         - name: shortener
           image: shortener:latest

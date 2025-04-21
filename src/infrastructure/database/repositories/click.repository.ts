@@ -1,6 +1,7 @@
 import { GenericRepository, IGenericRepository } from './generic.repository';
 import { Injectable } from '@nestjs/common';
 import { ClickEntity } from '../entities';
+import { DbService } from '../db.service';
 
 export interface IClickRepository extends IGenericRepository<ClickEntity> {}
 
@@ -9,8 +10,8 @@ export class ClickRepository
   extends GenericRepository<ClickEntity>
   implements IClickRepository
 {
-  constructor() {
+  constructor(dbService: DbService) {
     const entity = new ClickEntity();
-    super(entity);
+    super(entity, dbService);
   }
 }
