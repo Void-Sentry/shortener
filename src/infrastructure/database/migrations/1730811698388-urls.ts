@@ -1,4 +1,4 @@
-import { TDbClient } from '../index';
+import { TDbClient } from '../db.service';
 
 export default {
   up: (client: TDbClient) =>

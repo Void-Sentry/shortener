@@ -1,5 +1,5 @@
 import { parse } from '../utils/entity-parse';
-import { TDbClient, DbConn } from '../index';
+import { DbService, TDbClient } from '../db.service';
 
 export interface IGenericRepository<E> {
   findAll: () => Promise<E[]>;
@@ -17,7 +17,7 @@ export interface IGenericRepository<E> {
 }
 
 export abstract class GenericRepository<E> implements IGenericRepository<E> {
-  constructor(private readonly entity: E | any) {}
+  constructor(private readonly entity: E | any, protected readonly dbService: DbService) {}
 
   // Helper method to build WHERE clause
   private buildWhereClause(
@@ -43,7 +43,7 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
 
   readonly findAll = async (): Promise<E[]> => {
     const queryString = `SELECT * FROM ${this.entity.__table_name}`;
-    const res = await DbConn.query(queryString);
+    const res = await this.dbService.query(queryString);
     return parse<E>(res);
   };
 
@@ -66,7 +66,7 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
       queryStr += ` WHERE ${clause}`;
     }
   
-    const res = await (client ?? DbConn).query(queryStr, values);
+    const res = await (client ?? this.dbService).query(queryStr, values);
   
     const parsed = parse<E>(res);
   
@@ -76,7 +76,7 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
 
   readonly count = async (): Promise<number> => {
     const queryString = `SELECT COUNT(*) AS total FROM ${this.entity.__table_name}`;
-    const res = await DbConn.query(queryString);
+    const res = await this.dbService.query(queryString);
     return res.rows[0]['total'];
   };
 
@@ -97,7 +97,7 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
     const placeholders = keys.map((_, index) => `$${index + 1}`).join(', ');
 
     const queryStr = `INSERT INTO ${this.entity.__table_name} (${columns}) VALUES (${placeholders}) RETURNING *`;
-    const res = await (client ?? DbConn).query(queryStr, values);
+    const res = await (client ?? this.dbService).query(queryStr, values);
 
     const parsed = parse<E>(res);
 
@@ -126,7 +126,7 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
 
     const queryStr = `UPDATE ${this.entity.__table_name} SET ${setClause} WHERE ${whereClause} RETURNING *`;
 
-    const res = await (client ?? DbConn).query(queryStr, [
+    const res = await (client ?? this.dbService).query(queryStr, [
       ...dataValues,
       ...idValues,
     ]);
@@ -143,7 +143,7 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
 
     const queryStr = `DELETE FROM ${this.entity.__table_name} WHERE ${whereClause}`;
 
-    await DbConn.query(queryStr, idValues);
+    await this.dbService.query(queryStr, idValues);
   };
 
   readonly transaction = async <T>(data: {
@@ -157,16 +157,16 @@ export abstract class GenericRepository<E> implements IGenericRepository<E> {
     let tries = 0;
 
     while (true) {
-      await DbConn.beginTransaction(data.client);
+      await this.dbService.beginTransaction(data.client);
       tries++;
 
       try {
         const result = await data.callback();
-        await DbConn.commitTransaction(data.client);
+        await this.dbService.commitTransaction(data.client);
         await data.success();
         return result;
       } catch (error) {
-        await DbConn.rollbackTransaction(data.client);
+        await this.dbService.rollbackTransaction(data.client);
 
         if (error.code === '40001' && tries < maxTries) {
           console.log('Transaction failed. Retrying.');

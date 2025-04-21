@@ -1,8 +1,8 @@
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { init } from './infrastructure/database/migrations';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import { ConfigService } from './infrastructure/config';
 import { createLogger, format, Logger } from 'winston';
 import { ValidationPipe } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
@@ -30,8 +30,12 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+
+  const config = app.get(ConfigService);
+
   await app.register(fastifyCookie, {
-    secret: 'gcwk057mhjkivc8k20azd50j9eos2h16',
+    // secret: 'gcwk057mhjkivc8k20azd50j9eos2h16',
+    secret: config.get('COOKIE_SECRET')
   });
 
   app.useLogger(WinstonModule.createLogger({ instance: logger }));
@@ -40,24 +44,18 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [{
-        hostname: process.env.BUS_HOST,
-        username: process.env.BUS_USER,
-        password: process.env.BUS_PASS,
-        port: +process.env.BUS_PORT,
+        hostname: config.get('BUS_HOST'),
+        username: config.get('BUS_USER'),
+        password: config.get('BUS_PASS'),
+        port: +config.get('BUS_PORT'),
       }],
-      queue: process.env.BUS_QUEUE,
+      queue: config.get('BUS_QUEUE'),
       queueOptions: {
         durable: false
       },
       prefetchCount: 1,
     },
   });
-
-  // validate DB
-  await init();
-
-  // load DB pool
-  await import('./infrastructure/database');
 
   // swagger
   const options = new DocumentBuilder()
@@ -69,6 +67,6 @@ async function bootstrap() {
   SwaggerModule.setup('short/api', app, document);
 
   await app.startAllMicroservices();
-  await app.listen({ host: process.env.HOST, port: +process.env.PORT });
+  await app.listen({ host: config.get('HOST'), port: +config.get('PORT') });
 }
 bootstrap();

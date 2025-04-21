@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from
 import { FastifyRequest } from 'fastify';
 import { verify } from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
+import { ConfigService } from 'src/infrastructure/config';
 
 export type RequestWithUser = FastifyRequest & { user: any };
 
@@ -10,9 +11,11 @@ export class AuthGuard implements CanActivate {
     private client = jwksClient({
         jwksUri: process.env.JWKS_URI,
         requestHeaders: {
-            "Host": process.env.EXTERNAL_DOMAIN
+            "Host": this.configService.get('EXTERNAL_DOMAIN'),
         }
     });
+
+    constructor(private readonly configService: ConfigService) {}
 
     readonly #getKey = (header: any, callback: (err: any, key: any) => void) =>
         this.client.getSigningKey(header.kid, (err, key) => {

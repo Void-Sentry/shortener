@@ -7,12 +7,13 @@ import { UrlEntity } from "../infrastructure/database/entities";
 import { ShortService } from "./short.service";
 import { FastifyReply } from "fastify";
 import { createHmac } from "crypto";
+import { ConfigService } from "src/infrastructure/config";
 
 @ApiTags('URL Shortener')
 @UseGuards(AuthGuard)
 @Controller('short')
 export class ShortController {
-    constructor(private readonly shortService: ShortService) {}
+    constructor(private readonly shortService: ShortService, private readonly configService: ConfigService) {}
 
     @ApiOperation({ summary: 'List user shortened URLs' })
     @ApiResponse({
@@ -49,11 +50,11 @@ export class ShortController {
         if (!req?.user?.sub) {
             const info = {
                 agent: req.headers['user-agent'],
-                ip: (process.env.FAKE_IP || req.headers['X-Forwarded-For']) as string,
+                ip: (this.configService.get('FAKE_IP') || req.headers['X-Forwarded-For']) as string,
             };
             const serializedInfo = JSON.stringify(info);
             req.user = {
-                sub: createHmac('sha256', process.env.HMAC_SEED)
+                sub: createHmac('sha256', this.configService.get('HMAC_SEED'))
                     .update(serializedInfo)
                     .digest('hex'),
             };
